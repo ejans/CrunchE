@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "LedManager.h"
-LedManager ledManager = LedManager(1, 2, 3, 4);
+LedManager ledManager = LedManager(0, 0, 0, 1);
 
 #include "InputManager.h"
 InputManager inputManager = InputManager();
@@ -16,14 +16,14 @@ const byte ROWS = 4;
 const byte COLS = 4;
 
 char keys[ROWS][COLS] = {
-  { 'M', 'N', 'O', 'P' },
-  { 'I', 'J', 'K', 'L' },
-  { 'E', 'F', 'G', 'H' },
-  { 'A', 'B', 'C', 'D' }
+  { 'P', 'L', 'H', 'D' },
+  { 'O', 'K', 'G', 'C' },
+  { 'N', 'J', 'F', 'B' },
+  { 'M', 'I', 'E', 'A' }
 };
 
-byte rowPins[ROWS] = { 11, 10, 9, 8 };     //connect to the row pinouts of the keypad
-byte colPins[COLS] = { 12, 13, 14, 15 };  //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = { 8, 7, 6, 5 };     //connect to the row pinouts of the keypad
+byte colPins[COLS] = { 9, 10, 20, 21 };  //connect to the column pinouts of the keypad
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 float lastMillis;
@@ -33,21 +33,28 @@ char oldChar;
 const int sampleRate = 22000;  // sample rate in Hz
 
 void setup() {
+  //Serial.begin(115200);
+  Serial.println("In setup");
   lastMillis = millis();
 
   //setup I2S pins
-  I2S.setDataPin(7);
-  I2S.setSckPin(6);//blc
-  I2S.setFsPin(5);//lrc
+  I2S.setDataPin(0);
+  I2S.setSckPin(1);//blc
+  I2S.setFsPin(2);//lrc
 
   if (!I2S.begin(I2S_PHILIPS_MODE, sampleRate, 16)) {
     Serial.println("Failed to initialize I2S!");
     while (1)
-      ;
+       ;
   }
 }
 
 void loop() {
+  /*char key = keypad.getKey();
+  if (key) {
+    Serial.println(key);
+  }
+  inputManager.UpdateInput(key);*/
   inputManager.UpdateInput(keypad.getKey());
   char note = inputManager.note;
   char trackCommand = inputManager.trackCommand;
@@ -62,7 +69,8 @@ void loop() {
     tracker.SetCommand(trackCommand, trackCommandArgument);
   }
 
-  int sample = tracker.UpdateTracker();
+  //int sample = tracker.UpdateTracker();
+  int32_t sample = tracker.UpdateTracker();
   //loundness 
   if (abs(sample) > 4000) {
     int rem = abs(sample) - 4000;
@@ -73,7 +81,6 @@ void loop() {
     }
   }
   sample /= 4;
-
 
   I2S.write(sample);
   I2S.write(sample);
