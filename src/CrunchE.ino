@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "LedManager.h"
-LedManager ledManager = LedManager(0, 0, 0, 1);
+LedManager ledManager = LedManager(3, 3, 3, 3);
 
 #include "InputManager.h"
 InputManager inputManager = InputManager();
@@ -80,7 +80,7 @@ void loop() {
       sample = -4000 - (rem / 2);
     }
   }
-  sample /= 4;
+  sample /= 128;
 
   I2S.write(sample);
   I2S.write(sample);
