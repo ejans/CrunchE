@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "LedManager.h"
-LedManager ledManager = LedManager(3, 3, 3, 3);
+LedManager ledManager = LedManager(48, 48, 48, 48);
 
 #include "InputManager.h"
 InputManager inputManager = InputManager();
@@ -22,8 +22,8 @@ char keys[ROWS][COLS] = {
   { 'M', 'I', 'E', 'A' }
 };
 
-byte rowPins[ROWS] = { 8, 7, 6, 5 };     //connect to the row pinouts of the keypad
-byte colPins[COLS] = { 9, 10, 20, 21 };  //connect to the column pinouts of the keypad
+byte rowPins[ROWS] = { 4, 3, 2, 1 };     //connect to the row pinouts of the keypad
+byte colPins[COLS] = { 5, 6, 7, 8 };  //connect to the column pinouts of the keypad
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 float lastMillis;
@@ -38,9 +38,9 @@ void setup() {
   lastMillis = millis();
 
   //setup I2S pins
-  I2S.setDataPin(0);
-  I2S.setSckPin(1);//blc
-  I2S.setFsPin(2);//lrc
+  I2S.setDataPin(9);
+  I2S.setSckPin(10);//blc
+  I2S.setFsPin(11);//lrc
 
   if (!I2S.begin(I2S_PHILIPS_MODE, sampleRate, 16)) {
     Serial.println("Failed to initialize I2S!");
@@ -69,8 +69,7 @@ void loop() {
     tracker.SetCommand(trackCommand, trackCommandArgument);
   }
 
-  //int sample = tracker.UpdateTracker();
-  int32_t sample = tracker.UpdateTracker();
+  int sample = tracker.UpdateTracker();
   //loundness 
   if (abs(sample) > 4000) {
     int rem = abs(sample) - 4000;
@@ -80,7 +79,12 @@ void loop() {
       sample = -4000 - (rem / 2);
     }
   }
-  sample /= 128;
+  sample /= 128; // Headphones volume!
+  //sample /= 16;
+  //sample /= 8;
+  //sample /= 2;
+  Serial.print("Sample: ");
+  Serial.println(sample);
 
   I2S.write(sample);
   I2S.write(sample);
